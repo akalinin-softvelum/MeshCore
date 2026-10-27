@@ -44,6 +44,12 @@ class GxEPDDisplay : public DisplayDriver {
   int last_display_crc_value = 0;
   int _cycles_before_full_refresh;
   int max_partial_refresh = EINK_MAX_PARTIAL_REFRESH; // so this can be changed by an option after
+  void (*_busy_hook)() = NULL;
+
+  static void busyCallback(const void* self) {
+    ((const GxEPDDisplay*)self)->_busy_hook();
+    delay(1);  // same as GxEPD2 does without a callback
+  }
 
 public:
 #if defined(EINK_DISPLAY_MODEL)
@@ -58,6 +64,7 @@ public:
   bool isEink() override { return true; }
   void forceFullRefresh() override { _cycles_before_full_refresh = 0; };
   void resetPartialRefreshCounter() { _cycles_before_full_refresh = max_partial_refresh; };
+  void setBusyHook(void (*hook)()) override { _busy_hook = hook; }
   void turnOn() override;
   void turnOff() override;
   void blankScreen() override;

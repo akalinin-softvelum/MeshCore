@@ -222,7 +222,10 @@ void GxEPDDisplay::endFrame() {
   if (_isOn == false) return;
   uint32_t crc = display_crc.finalize();
   if (crc != last_display_crc_value) {
+    // keep the rest of the firmware running while the panel refreshes (~0.5s partial)
+    if (_busy_hook) display.epd2.setBusyCallback(busyCallback, this);
     display.display(true);
+    display.epd2.setBusyCallback(NULL);
     if (_cycles_before_full_refresh > 0) {
       _cycles_before_full_refresh--;
     }
